@@ -14,6 +14,7 @@ object BgmManager {
             mediaPlayer?.start()
         }
     }
+//asdf
 
     fun stopBgm() {
         mediaPlayer?.stop()
