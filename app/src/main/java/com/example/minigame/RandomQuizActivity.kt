@@ -10,6 +10,10 @@ import kotlin.random.Random
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import android.util.Log
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListener {
 
@@ -52,17 +56,22 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
     }
 
     private fun loadQuestions() {
-        val allQuestions = listOf(
-            Question("사과는 영어로?", listOf("Apple", "Banana", "Grape", "Orange"), 0),
-            Question("3 + 5는?", listOf("6", "7", "8", "9"), 2),
-            Question("대한민국 수도는?", listOf("부산", "서울", "대구", "인천"), 1),
-            Question("태양은?", listOf("별", "행성", "위성", "은하"), 0),
-            Question("물의 화학식은?", listOf("H2O", "CO2", "O2", "H2"), 0),
-            Question("1초는 몇 ms?", listOf("10", "100", "1000", "10000"), 2),
-            Question("HTML은?", listOf("프로그래밍 언어", "마크업 언어", "DB 언어", "운영체제"), 1),
-        )
-        questionList.addAll(allQuestions.shuffled().take(5))
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = triviaApi.getQuestions()
+                val fetched = response.results.map { it.toQuestion() }
+
+                withContext(Dispatchers.Main) {
+                    questionList.clear()
+                    questionList.addAll(fetched)
+                    startNextQuestion()
+                }
+            } catch (e: Exception) {
+                Log.e("Quiz", "문제 로딩 실패", e)
+            }
+        }
     }
+
 
     private fun startNextQuestion() {
         if (currentIndex >= questionList.size) {
@@ -170,5 +179,13 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
         CoroutineScope(Dispatchers.IO).launch {
             db.rankingDao().insertRanking(ranking)
         }
+    }
+
+    private val triviaApi: TriviaApi by lazy {
+        Retrofit.Builder()
+            .baseUrl("https://opentdb.com/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(TriviaApi::class.java)
     }
 }

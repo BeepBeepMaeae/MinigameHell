@@ -37,8 +37,8 @@ class GamePagerAdapter(private val gameList: List<GameInfo>) :
 
             val context = holder.itemView.context
             val intent = when (game.title) {
-                "2048" -> Intent(context, Game2048Activity::class.java)
-                "반응속도" -> Intent(context, ReactionTestActivity::class.java)
+                "카드 게임" -> Intent(context, CardGameActivity::class.java)
+                "반응 속도 테스트" -> Intent(context, ReactionTestActivity::class.java)
                 "랜덤 퀴즈" -> Intent(context, RandomQuizActivity::class.java)
                 else -> null
             }

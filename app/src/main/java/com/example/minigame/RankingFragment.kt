@@ -6,6 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
 class RankingFragment : DialogFragment() {
 
@@ -24,13 +26,6 @@ class RankingFragment : DialogFragment() {
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_ranking, container, false)
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -40,16 +35,15 @@ class RankingFragment : DialogFragment() {
         val gameTitle = arguments?.getString(ARG_GAME_TITLE) ?: "Unknown"
         tvRankingTitle.text = "$gameTitle 랭킹"
 
-        // (임시) 더미 데이터 출력
-        val dummyData = listOf(
-            "1등: Player1 - 5000점",
-            "2등: Player2 - 4200점",
-            "3등: Player3 - 3900점",
-            "4등: Player4 - 3000점",
-            "5등: Player5 - 2800점"
-        )
+        val db = RankingDatabase.getDatabase(requireContext())
+        viewLifecycleOwner.lifecycleScope.launch {
+            val topRankings = db.rankingDao().getTop5Rankings(gameTitle)
+            val formatted = topRankings.mapIndexed { i, r ->
+                "${i + 1}등: ${r.nickname} - ${r.score}점"
+            }.joinToString("\n")
 
-        tvRankingList.text = dummyData.joinToString("\n")
+            tvRankingList.text = if (formatted.isNotEmpty()) formatted else "아직 기록이 없습니다."
+        }
     }
 
     override fun onStart() {

@@ -8,6 +8,11 @@ espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.1"
 composeBom = "2024.04.01"
+retrofit = "2.9.0"
+glide = "4.16.0"
+firebase-bom = "32.7.0"
+firebase-firestore = "24.10.2"
+google-services = "4.4.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -29,10 +34,15 @@ viewpager2 = { module = "androidx.viewpager2:viewpager2", version = "1.0.0" }
 room-runtime = { module = "androidx.room:room-runtime", version = "2.6.1" }
 room-compiler = { module = "androidx.room:room-compiler", version = "2.6.1" }
 room-ktx = { module = "androidx.room:room-ktx", version = "2.6.1" }
+retrofit2 = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
+retrofit2_converter_gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
+glide_compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "glide" }
+firebase_firestore_ktx = { module = "com.google.firebase:firebase-firestore-ktx", version.ref = "google-services" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version = "1.9.10-1.0.13" }
-
+google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
