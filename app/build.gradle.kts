@@ -45,6 +45,19 @@ android {
 }
 
 dependencies {
+    // TensorFlow Lite
+    implementation("org.tensorflow:tensorflow-lite:2.9.0")
+    implementation("org.tensorflow:tensorflow-lite-support:0.3.1")
+
+// CameraX
+    implementation("androidx.camera:camera-core:1.3.1")
+    implementation("androidx.camera:camera-camera2:1.3.1")
+    implementation("androidx.camera:camera-lifecycle:1.3.1")
+    implementation("androidx.camera:camera-view:1.3.1")
+
+// ML Kit - Face Detection (no play-services)
+    implementation("com.google.mlkit:face-detection:16.1.5")
+
     implementation(libs.appcompat)
     implementation(libs.viewpager2)
     implementation(libs.room.runtime)
