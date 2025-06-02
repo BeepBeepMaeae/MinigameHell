@@ -1,12 +1,16 @@
 package com.example.minigame
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.View
-import android.widget.*
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import kotlin.random.Random
+import com.bumptech.glide.Glide
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,12 +29,22 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
     private lateinit var tvScore: TextView
     private lateinit var tvTimer: TextView
     private lateinit var btnPause: Button
+    private lateinit var profileImageView: ImageView
 
     private val questionList = mutableListOf<Question>()
     private var currentIndex = 0
     private var score = 0
     private var currentTimer: CountDownTimer? = null
     private var currentStartTime = 0L
+
+    // Retrofit API 초기화
+    private val triviaApi: TriviaApi by lazy {
+        Retrofit.Builder()
+            .baseUrl("https://opentdb.com/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(TriviaApi::class.java)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,6 +58,12 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
         tvScore = findViewById(R.id.tvScore)
         tvTimer = findViewById(R.id.tvTimer)
         btnPause = findViewById(R.id.btnPause)
+        profileImageView = findViewById(R.id.profileImageView)
+
+        // 프로필 이미지 표시
+        SharedPrefManager.getProfileImageUri(this)?.let {
+            Glide.with(this).load(Uri.parse(it)).into(profileImageView)
+        }
 
         btnPause.setOnClickListener {
             SoundEffectManager.playClick(this)
@@ -71,7 +91,6 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
             }
         }
     }
-
 
     private fun startNextQuestion() {
         if (currentIndex >= questionList.size) {
@@ -123,28 +142,29 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
     }
 
     private fun showResult() {
-        saveRanking("Quiz", score)
+        // 로컬 DB 저장 제거 → Firebase만 업로드
+        val nickname = SharedPrefManager.getNickname(this)
+        FirebaseManager.uploadScore("Quiz", nickname, score)
 
-        val builder = androidx.appcompat.app.AlertDialog.Builder(this)
-        builder.setTitle("게임 종료")
-        builder.setMessage("최종 점수: $score\n다시 도전하시겠습니까?")
-        builder.setPositiveButton("다시 시작") { _, _ ->
-            score = 0
-            currentIndex = 0
-            questionList.clear()
-            loadQuestions()
-            startNextQuestion()
-        }
-        builder.setNegativeButton("나가기") { _, _ ->
-            val intent = Intent(this, GameSelectActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            startActivity(intent)
-            finish()
-        }
-        builder.setCancelable(false)
-        builder.show()
+        val resultDialog = GameResultFragment.newInstance(score, "Quiz")
+        resultDialog.setOnResultActionListener(object : GameResultFragment.ResultActionListener {
+            override fun onRetry() {
+                score = 0
+                currentIndex = 0
+                questionList.clear()
+                loadQuestions()
+                startNextQuestion()
+            }
+
+            override fun onQuit() {
+                val intent = Intent(this@RandomQuizActivity, GameSelectActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                startActivity(intent)
+                finish()
+            }
+        })
+        resultDialog.show(supportFragmentManager, "GameResultFragment")
     }
-
 
     override fun onPause() {
         super.onPause()
@@ -168,24 +188,5 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(intent)
         finish()
-    }
-
-    private fun saveRanking(gameType: String, score: Int) {
-        val nickname = SharedPrefManager.getNickname(this)
-        val ranking = RankingEntity(gameType = gameType, nickname = nickname, score = score)
-
-        val db = RankingDatabase.getDatabase(this)
-
-        CoroutineScope(Dispatchers.IO).launch {
-            db.rankingDao().insertRanking(ranking)
-        }
-    }
-
-    private val triviaApi: TriviaApi by lazy {
-        Retrofit.Builder()
-            .baseUrl("https://opentdb.com/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(TriviaApi::class.java)
     }
 }

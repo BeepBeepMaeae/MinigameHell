@@ -4,6 +4,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import android.widget.ImageView
+import com.bumptech.glide.Glide
+import android.net.Uri
 
 class MainActivity : AppCompatActivity() {
 
@@ -13,6 +16,12 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // 프로필 이미지 로드
+        val profileImageView = findViewById<ImageView>(R.id.profileImageView)
+        SharedPrefManager.getProfileImageUri(this)?.let { uriString ->
+            Glide.with(this).load(Uri.parse(uriString)).into(profileImageView)
+        }
 
         btnStart = findViewById(R.id.btnStart)
         btnSettings = findViewById(R.id.btnSettings)
