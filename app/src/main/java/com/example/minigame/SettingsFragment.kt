@@ -33,7 +33,8 @@ class SettingsFragment : DialogFragment() {
         editNickname = view.findViewById(R.id.editNickname)
         btnSaveSettings = view.findViewById(R.id.btnSaveSettings)
 
-        val sharedPref = requireContext().getSharedPreferences("minigame_prefs", Context.MODE_PRIVATE)
+        val sharedPref =
+            requireContext().getSharedPreferences("minigame_prefs", Context.MODE_PRIVATE)
         seekBackgroundVolume.progress = sharedPref.getInt("background_volume", 50)
         seekEffectVolume.progress = sharedPref.getInt("effect_volume", 50)
         editNickname.setText(sharedPref.getString("nickname", "Player"))

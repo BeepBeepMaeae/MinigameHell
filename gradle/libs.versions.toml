@@ -38,7 +38,8 @@ retrofit2 = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofi
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 retrofit2_converter_gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 glide_compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "glide" }
-firebase_firestore_ktx = { module = "com.google.firebase:firebase-firestore-ktx", version.ref = "google-services" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
+firebase-firestore-ktx = { module = "com.google.firebase:firebase-firestore-ktx", version = "24.10.3" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

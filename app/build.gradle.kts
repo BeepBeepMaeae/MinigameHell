@@ -56,7 +56,7 @@ dependencies {
     implementation(libs.retrofit2)
     implementation(libs.retrofit2.converter.gson)
     implementation(libs.glide)
-    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore.ktx)
     ksp(libs.glide.compiler)
     implementation(platform(libs.androidx.compose.bom))
