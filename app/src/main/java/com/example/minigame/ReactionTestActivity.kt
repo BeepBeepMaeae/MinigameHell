@@ -1,25 +1,27 @@
 package com.example.minigame
 
 import android.content.Intent
-import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.View
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import kotlin.random.Random
+import com.bumptech.glide.Glide
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import androidx.appcompat.app.AlertDialog
+import kotlin.random.Random
 
 class ReactionTestActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListener {
 
     private lateinit var tvInfo: TextView
     private lateinit var btnPause: Button
     private lateinit var mainLayout: View
+    private lateinit var profileImageView: ImageView
 
     private var isWaitingForTouch = false
     private var startTime = 0L
@@ -36,6 +38,12 @@ class ReactionTestActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuLis
         tvInfo = findViewById(R.id.tvInfo)
         btnPause = findViewById(R.id.btnPause)
         mainLayout = findViewById(R.id.reactionRoot)
+        profileImageView = findViewById(R.id.profileImageView)
+
+        // 프로필 이미지 표시
+        SharedPrefManager.getProfileImageUri(this)?.let {
+            Glide.with(this).load(Uri.parse(it)).into(profileImageView)
+        }
 
         startRound()
 
@@ -63,12 +71,12 @@ class ReactionTestActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuLis
 
     private fun startRound() {
         tvInfo.text = "준비하세요..."
-        mainLayout.setBackgroundColor(Color.WHITE)
+        mainLayout.setBackgroundColor(android.graphics.Color.WHITE)
 
-        val delay = Random.nextLong(1500L, 3000L) // 1.5초~3초 랜덤 대기
+        val delay = Random.nextLong(1500L, 3000L)
         pendingRunnable = Runnable {
             tvInfo.text = "터치하세요!"
-            mainLayout.setBackgroundColor(Color.GREEN)
+            mainLayout.setBackgroundColor(android.graphics.Color.GREEN)
             startTime = System.currentTimeMillis()
             isWaitingForTouch = true
         }
@@ -79,39 +87,34 @@ class ReactionTestActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuLis
         val avgReaction = reactionTimes.average().toInt()
         val finalScore = 10000 - avgReaction
 
-        saveRanking("Reaction", finalScore)
+        // 로컬 DB 저장 제거 → Firebase만 업로드
+        val nickname = SharedPrefManager.getNickname(this)
+        FirebaseManager.uploadScore("Reaction", nickname, finalScore)
 
-        val builder = androidx.appcompat.app.AlertDialog.Builder(this)
-        builder.setTitle("게임 종료")
-        builder.setMessage("평균 반응속도: ${avgReaction}ms\n점수: $finalScore\n다시 도전하시겠습니까?")
-        builder.setPositiveButton("다시 시작") { _, _ ->
-            reactionTimes.clear()
-            round = 0
-            startRound()
-        }
-        builder.setNegativeButton("나가기") { _, _ ->
-            val intent = Intent(this, GameSelectActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            startActivity(intent)
-            finish()
-        }
-        builder.setCancelable(false)
-        builder.show()
+        val resultDialog = GameResultFragment.newInstance(finalScore, "Reaction")
+        resultDialog.setOnResultActionListener(object : GameResultFragment.ResultActionListener {
+            override fun onRetry() {
+                reactionTimes.clear()
+                round = 0
+                startRound()
+            }
+
+            override fun onQuit() {
+                val intent = Intent(this@ReactionTestActivity, GameSelectActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                startActivity(intent)
+                finish()
+            }
+        })
+        resultDialog.show(supportFragmentManager, "GameResultFragment")
     }
-
 
     override fun onPause() {
         super.onPause()
         pendingRunnable?.let { handler.removeCallbacks(it) }
     }
 
-    override fun onTouchEvent(event: android.view.MotionEvent?): Boolean {
-        return super.onTouchEvent(event)
-    }
-
-    override fun onResumeGame() {
-        // 아무것도 안 함
-    }
+    override fun onResumeGame() {}
 
     override fun onRetryGame() {
         reactionTimes.clear()
@@ -124,15 +127,5 @@ class ReactionTestActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuLis
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(intent)
         finish()
-    }
-
-    private fun saveRanking(gameType: String, score: Int) {
-        val nickname = SharedPrefManager.getNickname(this)
-        val ranking = RankingEntity(gameType = gameType, nickname = nickname, score = score)
-
-        val db = RankingDatabase.getDatabase(this)
-        CoroutineScope(Dispatchers.IO).launch {
-            db.rankingDao().insertRanking(ranking)
-        }
     }
 }

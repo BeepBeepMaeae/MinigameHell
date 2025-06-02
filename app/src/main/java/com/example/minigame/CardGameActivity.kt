@@ -1,16 +1,15 @@
 package com.example.minigame
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
@@ -25,6 +24,7 @@ class CardGameActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListene
     private lateinit var drawButton: Button
     private lateinit var remainingTextView: TextView
     private lateinit var pauseButton: Button
+    private lateinit var profileImageView: ImageView
 
     private val api by lazy {
         Retrofit.Builder()
@@ -47,6 +47,11 @@ class CardGameActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListene
         drawButton = findViewById(R.id.drawButton)
         remainingTextView = findViewById(R.id.remainingTextView)
         pauseButton = findViewById(R.id.btnPause)
+        profileImageView = findViewById(R.id.profileImageView)
+
+        SharedPrefManager.getProfileImageUri(this)?.let { uriString ->
+            Glide.with(this).load(Uri.parse(uriString)).into(profileImageView)
+        }
 
         drawButton.setOnClickListener {
             drawCard()
@@ -64,28 +69,24 @@ class CardGameActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListene
     }
 
     private suspend fun initializeDeck() {
-        withContext(Dispatchers.IO) {
-            try {
-                val response = api.newDeck()
+        withContext(kotlinx.coroutines.Dispatchers.IO) {
+            val response = api.newDeck()
                 if (response.success) {
                     deckId = response.deck_id
                     Log.d("CardGame", "Deck initialized: $deckId")
-                }
-            } catch (e: Exception) {
-                Log.e("CardGame", "Deck initialization failed", e)
-            }
+                } //일단 오류 나서 try-catch문 없앰. 참고 부탁합니다 ~
         }
     }
 
     private fun drawCard() {
         val id = deckId ?: return
 
-        lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
             try {
                 val response = api.drawCard(id, 1)
                 val card = response.cards.firstOrNull()
                 val remaining = response.remaining
-                withContext(Dispatchers.Main) {
+                withContext(kotlinx.coroutines.Dispatchers.Main) {
                     card?.let {
                         Glide.with(this@CardGameActivity)
                             .load(it.image)
@@ -106,41 +107,31 @@ class CardGameActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListene
     }
 
     private fun showResult() {
-        saveRanking("CardGame", score)
-
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("게임 종료")
-        builder.setMessage("최종 점수: $score\n다시 도전하시겠습니까?")
-        builder.setPositiveButton("다시 시작") { _, _ ->
-            score = 0
-            drawCount = 0
-            lifecycleScope.launch {
-                initializeDeck()
-            }
-        }
-        builder.setNegativeButton("나가기") { _, _ ->
-            val intent = Intent(this, GameSelectActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            startActivity(intent)
-            finish()
-        }
-        builder.setCancelable(false)
-        builder.show()
-    }
-
-    private fun saveRanking(gameType: String, score: Int) {
+        // Firebase에만 업로드 (로컬 DB 저장 제거)
         val nickname = SharedPrefManager.getNickname(this)
-        val ranking = RankingEntity(gameType = gameType, nickname = nickname, score = score)
+        FirebaseManager.uploadScore("CardGame", nickname, score)
 
-        val db = RankingDatabase.getDatabase(this)
-        lifecycleScope.launch(Dispatchers.IO) {
-            db.rankingDao().insertRanking(ranking)
-        }
+        val resultDialog = GameResultFragment.newInstance(score, "CardGame")
+        resultDialog.setOnResultActionListener(object : GameResultFragment.ResultActionListener {
+            override fun onRetry() {
+                score = 0
+                drawCount = 0
+                lifecycleScope.launch {
+                    initializeDeck()
+                }
+            }
+
+            override fun onQuit() {
+                val intent = Intent(this@CardGameActivity, GameSelectActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                startActivity(intent)
+                finish()
+            }
+        })
+        resultDialog.show(supportFragmentManager, "GameResultFragment")
     }
 
-    override fun onResumeGame() {
-        // 추가 로직 없음
-    }
+    override fun onResumeGame() {}
 
     override fun onRetryGame() {
         score = 0
