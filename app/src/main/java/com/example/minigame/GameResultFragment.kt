@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
+import com.google.firebase.firestore.FirebaseFirestore
 
 class GameResultFragment : DialogFragment() {
 
@@ -21,6 +22,11 @@ class GameResultFragment : DialogFragment() {
 
     fun setOnResultActionListener(l: ResultActionListener) {
         listener = l
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        isCancelable = false
     }
 
     override fun onCreateView(
@@ -42,15 +48,61 @@ class GameResultFragment : DialogFragment() {
         val game = arguments?.getString(ARG_GAME) ?: "?"
         tvResult.text = "$game 게임 결과\n점수: $score"
 
+        SoundEffectManager.playResult(requireContext())
+
         btnRetry.setOnClickListener {
-            listener?.onRetry()
-            dismiss()
+            val score = arguments?.getInt(ARG_SCORE) ?: 0
+            val game = arguments?.getString(ARG_GAME) ?: "?"
+
+            val gameKey = when (game) {
+                "퀴즈" -> GameTypes.QUIZ
+                "카드 게임" -> GameTypes.CARD
+                "반응속도" -> GameTypes.REACTION
+                else -> GameTypes.QUIZ
+            }
+
+            val nickname = SharedPrefManager.getNickname(requireContext()).ifBlank { "Player" }
+            val timestamp = com.google.firebase.Timestamp.now()
+
+            val scoreData = mapOf(
+                "gameType" to gameKey,
+                "nickname" to nickname,
+                "score" to score,
+                "timestamp" to timestamp
+            )
+
+            FirebaseFirestore.getInstance()
+                .collection("scores")
+                .add(scoreData)
+                .addOnSuccessListener {
+                    // 저장 성공 후 게임 재시작
+                    listener?.onRetry()
+                    dismiss()
+                }
+                .addOnFailureListener {
+                    // 실패해도 일단 진행
+                    listener?.onRetry()
+                    dismiss()
+                }
         }
 
         btnQuit.setOnClickListener {
             listener?.onQuit()
+
+            val game = arguments?.getString(ARG_GAME) ?: "?"
+            val gameKey = when (game) {
+                "퀴즈" -> GameTypes.QUIZ
+                "카드 게임" -> GameTypes.CARD
+                "반응속도" -> GameTypes.REACTION
+                else -> GameTypes.QUIZ // 기본값
+            }
+
+            val rankingFragment = RankingFragment.newInstance(gameKey)
+            rankingFragment.show(parentFragmentManager, "RankingFragment")
+
             dismiss()
         }
+
 
         btnShare.setOnClickListener {
             val intent = Intent(Intent.ACTION_SEND).apply {

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/cardGameRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -18,25 +19,27 @@
         android:background="@drawable/round_border"
         android:layout_margin="8dp" />
 
-    <!-- 카드 이미지 -->
-    <ImageView
-        android:id="@+id/cardImageView"
-        android:layout_width="200dp"
-        android:layout_height="300dp"
-        android:layout_centerInParent="true"
-        android:layout_marginBottom="16dp"
-        android:layout_above="@+id/remainingTextView" />
-
-    <!-- 남은 카드 수/점수 -->
+    <!-- 상태 텍스트 (점수, 시도, 합계) -->
     <TextView
         android:id="@+id/remainingTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="남은 카드 수: ?"
+        android:text="누적 점수: 0\n남은 시도: 5\n현재 합계: 0"
         android:textSize="18sp"
+        android:layout_below="@id/profileImageView"
         android:layout_centerHorizontal="true"
-        android:layout_above="@+id/drawButton"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginTop="16dp" />
+
+    <!-- 뽑은 카드 목록 (FlexboxLayout) -->
+    <com.google.android.flexbox.FlexboxLayout
+        android:id="@+id/drawnCardsContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/remainingTextView"
+        android:layout_marginTop="16dp"
+        app:flexDirection="row"
+        app:flexWrap="wrap"
+        app:justifyContent="flex_start" />
 
     <!-- 카드 뽑기 버튼 -->
     <Button
@@ -44,9 +47,24 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="카드 뽑기"
-        android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="24dp" />
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="72dp"
+        android:backgroundTint="@color/orange"
+        android:textColor="@android:color/white" />
+
+    <!-- 스톱 버튼 -->
+    <Button
+        android:id="@+id/stopButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="스톱"
+        android:enabled="false"
+        android:layout_above="@id/drawButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="@color/orange"
+        android:textColor="@android:color/white" />
 
     <!-- 일시정지 버튼 -->
     <Button
@@ -56,6 +74,8 @@
         android:text="일시정지"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_margin="8dp" />
+        android:layout_margin="8dp"
+        android:backgroundTint="@color/orange"
+        android:textColor="@android:color/white" />
 
 </RelativeLayout>

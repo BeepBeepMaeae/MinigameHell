@@ -29,5 +29,11 @@ class GameSelectActivity : AppCompatActivity() {
             GameInfo("랜덤 퀴즈", R.drawable.ic_quiz_thumbnail)
         )
         viewPager.adapter = GamePagerAdapter(gameList)
+
+    }
+    override fun onResume() {
+        super.onResume()
+        // 게임 선택 화면 진입 시 메인 테마 재생
+        BgmManager.startBgm(this, R.raw.main_bgm)
     }
 }

@@ -45,6 +45,16 @@ android {
 }
 
 dependencies {
+<<<<<<< Updated upstream
+=======
+    implementation ("androidx.fragment:fragment-ktx:1.5.0")
+    implementation(platform("androidx.compose:compose-bom:2024.04.01"))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    implementation(libs.flexbox)
+>>>>>>> Stashed changes
     implementation(libs.appcompat)
     implementation(libs.viewpager2)
     implementation(libs.room.runtime)
@@ -71,5 +81,4 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
 }

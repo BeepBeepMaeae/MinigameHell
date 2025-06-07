@@ -25,7 +25,7 @@
         </activity>
 
         <activity android:name=".GameSelectActivity" />
-        <activity android:name=".Game2048Activity" />
+        <activity android:name=".CardGameActivity" />
         <activity android:name=".ReactionTestActivity" />
         <activity android:name=".RandomQuizActivity" />
     </application>

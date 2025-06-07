@@ -9,11 +9,9 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 class ReactionTestActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListener {
@@ -27,7 +25,6 @@ class ReactionTestActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuLis
     private var startTime = 0L
     private val reactionTimes = mutableListOf<Long>()
     private val handler = Handler(Looper.getMainLooper())
-
     private var round = 0
     private var pendingRunnable: Runnable? = null
 
@@ -59,18 +56,42 @@ class ReactionTestActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuLis
                 } else {
                     startRound()
                 }
+            } else {
+                // 너무 빨리 눌렀을 때
+                SoundEffectManager.playTooEarly(this@ReactionTestActivity)
+                Toast.makeText(
+                    this@ReactionTestActivity,
+                    "너무 빨리 누르셨습니다!",
+                    Toast.LENGTH_SHORT
+                ).show()
+                // 기존 대기 콜백 제거
+                pendingRunnable?.let { handler.removeCallbacks(it) }
+                isWaitingForTouch = false
+                // 1초 뒤에 다음 라운드 자동 시작
+                handler.postDelayed({ startRound() }, 1000L)
             }
         }
 
         btnPause.setOnClickListener {
             SoundEffectManager.playClick(this)
-            val pauseMenu = PauseMenuFragment()
-            pauseMenu.show(supportFragmentManager, "PauseMenuFragment")
+            PauseMenuFragment().show(supportFragmentManager, "PauseMenuFragment")
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        // 반응 속도 테스트 화면에서는 배경음악 완전 중단
+        BgmManager.stopBgm()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // 남은 콜백 모두 제거
+        pendingRunnable?.let { handler.removeCallbacks(it) }
+    }
+
     private fun startRound() {
-        tvInfo.text = "준비하세요..."
+        tvInfo.text = "준비하세요."
         mainLayout.setBackgroundColor(android.graphics.Color.WHITE)
 
         val delay = Random.nextLong(1500L, 3000L)
@@ -87,7 +108,7 @@ class ReactionTestActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuLis
         val avgReaction = reactionTimes.average().toInt()
         val finalScore = 10000 - avgReaction
 
-        // 로컬 DB 저장 제거 → Firebase만 업로드
+        // Firebase로 점수 업로드
         val nickname = SharedPrefManager.getNickname(this)
         FirebaseManager.uploadScore("Reaction", nickname, finalScore)
 
@@ -100,21 +121,17 @@ class ReactionTestActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuLis
             }
 
             override fun onQuit() {
-                val intent = Intent(this@ReactionTestActivity, GameSelectActivity::class.java)
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                startActivity(intent)
+                startActivity(
+                    Intent(this@ReactionTestActivity, GameSelectActivity::class.java)
+                        .apply { addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) }
+                )
                 finish()
             }
         })
         resultDialog.show(supportFragmentManager, "GameResultFragment")
     }
 
-    override fun onPause() {
-        super.onPause()
-        pendingRunnable?.let { handler.removeCallbacks(it) }
-    }
-
-    override fun onResumeGame() {}
+    override fun onResumeGame() = Unit
 
     override fun onRetryGame() {
         reactionTimes.clear()
@@ -123,9 +140,10 @@ class ReactionTestActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuLis
     }
 
     override fun onQuitGame() {
-        val intent = Intent(this, GameSelectActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        startActivity(intent)
+        startActivity(
+            Intent(this, GameSelectActivity::class.java)
+                .apply { addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) }
+        )
         finish()
     }
 }
