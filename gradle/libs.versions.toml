@@ -15,6 +15,7 @@ firebase-firestore = "24.10.2"
 google-services = "4.4.0"
 ksp = "1.9.10-1.0.13"
 composePlugin = "1.5.11"
+flexbox = "3.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -42,6 +43,7 @@ retrofit2_converter_gson = { module = "com.squareup.retrofit2:converter-gson", v
 glide_compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "glide" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
 firebase-firestore-ktx = { module = "com.google.firebase:firebase-firestore-ktx", version = "24.10.3" }
+flexbox = { group = "com.google.android.flexbox", name = "flexbox", version.ref = "flexbox" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

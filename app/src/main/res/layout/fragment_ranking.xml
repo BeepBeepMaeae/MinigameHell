@@ -46,6 +46,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="공유하기"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@color/orange"
+        android:textColor="@android:color/white" />
 
 </LinearLayout>

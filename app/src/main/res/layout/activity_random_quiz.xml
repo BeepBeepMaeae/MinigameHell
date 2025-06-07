@@ -1,5 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
+<!-- res/layout/activity_random_quiz.xml -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="24dp"
@@ -17,66 +18,98 @@
         android:src="@drawable/ic_profile_placeholder"
         android:background="@drawable/round_border" />
 
-    <!-- 문제 텍스트 -->
-    <TextView
-        android:id="@+id/tvQuestion"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="문제"
-        android:textSize="20sp"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="80dp" />
-
-    <!-- 4지선다 버튼들 -->
-    <Button android:id="@+id/btnOption1"
+    <!-- 스크롤 가능한 문제 영역 -->
+    <ScrollView
+        android:id="@+id/questionScroll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/tvQuestion"
-        android:layout_marginTop="16dp" />
+        android:layout_below="@id/profileImageView"
+        android:paddingBottom="16dp">
 
-    <Button android:id="@+id/btnOption2"
+        <TextView
+            android:id="@+id/tvQuestion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:textColor="@android:color/black"
+            android:text="Waiting ..." />
+    </ScrollView>
+
+    <!-- 선택지 + 현재 점수 컨테이너: 화면 중앙 배치 -->
+    <LinearLayout
+        android:id="@+id/optionsContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/btnOption1"
-        android:layout_marginTop="8dp" />
+        android:orientation="vertical"
+        android:layout_centerInParent="true">
 
-    <Button android:id="@+id/btnOption3"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/btnOption2"
-        android:layout_marginTop="8dp" />
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnOption1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="@color/orange"
+            android:textColor="@android:color/white"
+            android:padding="12dp" />
 
-    <Button android:id="@+id/btnOption4"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/btnOption3"
-        android:layout_marginTop="8dp" />
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnOption2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="@color/orange"
+            android:textColor="@android:color/white"
+            android:padding="12dp" />
 
-    <!-- 점수 및 타이머 -->
-    <TextView
-        android:id="@+id/tvScore"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="점수: 0"
-        android:layout_below="@id/btnOption4"
-        android:layout_marginTop="24dp" />
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnOption3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="@color/orange"
+            android:textColor="@android:color/white"
+            android:padding="12dp" />
 
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnOption4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="@color/orange"
+            android:textColor="@android:color/white"
+            android:padding="12dp" />
+
+        <TextView
+            android:id="@+id/tvScore"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="점수: 0"
+            android:textColor="@android:color/black"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp" />
+
+    </LinearLayout>
+
+    <!-- 남은 시간 표시 -->
     <TextView
         android:id="@+id/tvTimer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="10"
+        android:text="15"
+        android:textSize="24sp"
+        android:textColor="@android:color/black"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:textSize="24sp"
         android:layout_marginBottom="32dp" />
 
     <!-- 일시정지 버튼 -->
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnPause"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="일시정지"
+        android:textColor="@android:color/white"
+        android:backgroundTint="@color/orange"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
         android:layout_margin="8dp" />

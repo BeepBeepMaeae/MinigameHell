@@ -19,6 +19,14 @@ class MainActivity : AppCompatActivity() {
 
         // 프로필 이미지 로드
         val profileImageView = findViewById<ImageView>(R.id.profileImageView)
+
+        supportFragmentManager
+         .setFragmentResultListener("profileImageChanged", this) { _, bundle ->
+               bundle.getString("uri")?.let { uri ->
+                     Glide.with(this).load(Uri.parse(uri)).into(profileImageView)
+                   }
+             }
+
         SharedPrefManager.getProfileImageUri(this)?.let { uriString ->
             Glide.with(this).load(Uri.parse(uriString)).into(profileImageView)
         }
@@ -40,11 +48,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        BgmManager.startBgm(this)
-    }
-
-    override fun onPause() {
-        super.onPause()
-        BgmManager.stopBgm()
+        BgmManager.startBgm(this, R.raw.main_bgm)
     }
 }

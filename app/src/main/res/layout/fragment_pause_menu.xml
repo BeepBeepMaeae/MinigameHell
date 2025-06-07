@@ -12,18 +12,24 @@
         android:text="계속하기"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="@color/orange"
+        android:textColor="@android:color/white"/>
 
     <Button
         android:id="@+id/btnRetry"
         android:text="다시 시작"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="@color/orange"
+        android:textColor="@android:color/white"/>
 
     <Button
         android:id="@+id/btnQuit"
         android:text="나가기"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/orange"
+        android:textColor="@android:color/white"/>
 </LinearLayout>

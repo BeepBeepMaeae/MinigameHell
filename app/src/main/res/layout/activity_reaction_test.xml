@@ -35,6 +35,9 @@
         android:text="일시정지"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
-        android:layout_margin="8dp" />
+        android:layout_margin="8dp"
+        android:backgroundTint="@color/orange"
+        android:textColor="@android:color/white" />
+
 
 </RelativeLayout>

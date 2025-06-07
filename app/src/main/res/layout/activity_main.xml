@@ -6,11 +6,11 @@
     android:padding="24dp"
     android:background="@android:color/white">
 
-    <!-- 프로필 이미지: 우측 상단에 표시 -->
+    <!-- (1) 프로필 이미지: findViewById(R.id.profileImageView) 용 -->
     <ImageView
         android:id="@+id/profileImageView"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:layout_margin="8dp"
@@ -18,21 +18,45 @@
         android:src="@drawable/ic_profile_placeholder"
         android:background="@drawable/round_border" />
 
-    <!-- 기존 뷰들 -->
+    <!-- (2) 타이틀 로고 -->
+    <ImageView
+        android:id="@+id/logoImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_app_logo"
+        android:contentDescription="@string/app_name"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/profileImageView"
+        android:layout_marginTop="16dp"
+        android:adjustViewBounds="true"
+        android:maxWidth="800dp"
+        android:maxHeight="320dp"
+        android:scaleType="centerInside" />
+
+    <!-- 시작하기 버튼 -->
     <Button
         android:id="@+id/btnStart"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="시작하기"
-        android:layout_centerInParent="true" />
+        android:textSize="20sp"
+        android:layout_below="@id/logoImageView"
+        android:layout_marginTop="16dp"
+        android:layout_margin="8dp"
+        android:backgroundTint="@color/orange"
+        android:textColor="@android:color/white" />
 
+    <!-- 설정 버튼 -->
     <Button
         android:id="@+id/btnSettings"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="설정"
+        android:textSize="20sp"
         android:layout_below="@id/btnStart"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="8dp"
+        android:layout_margin="8dp"
+        android:backgroundTint="@color/orange"
+        android:textColor="@android:color/white" />
 
 </RelativeLayout>
