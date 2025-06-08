@@ -201,15 +201,27 @@ class CardGameActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListene
         GameResultFragment.newInstance(totalScore, GameTypes.CARD).apply {
             setOnResultActionListener(object : GameResultFragment.ResultActionListener {
                 override fun onRetry() {
-                    totalScore=0; triesLeft=5; currentSum=0; aceCount=0
+                    // (onRetryGame 과 동일한 흐름)
+                    totalScore = 0
+                    triesLeft   = 5
+                    currentSum  = 0
+                    aceCount    = 0
                     drawnCardsContainer.removeAllViews()
-                    lifecycleScope.launch{ initializeDeck() }
-                    updateStatus()
+
+                    drawButton.isEnabled = false
+                    stopButton.isEnabled = false
+                    statusTextView.text = "덱을 다시 섞는 중..."
+
+                    lifecycleScope.launch {
+                        initializeDeck()
+                        drawButton.isEnabled = true
+                        updateStatus()
+                    }
                 }
                 override fun onQuit() {
                     startActivity(
                         Intent(this@CardGameActivity, GameSelectActivity::class.java)
-                            .apply{ addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) }
+                            .apply { addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) }
                     )
                     finish()
                 }
@@ -231,22 +243,24 @@ class CardGameActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListene
 // CardGameActivity.kt 에서
 
     override fun onRetryGame() {
-        // 1) 모든 상태값 초기화
+        // 1) 상태 초기화
         totalScore = 0
         triesLeft   = 5
         currentSum  = 0
         aceCount    = 0
-
-        // 2) 화면에 그려진 카드 제거
         drawnCardsContainer.removeAllViews()
 
-        // 3) 버튼 상태 초기화
-        drawButton.isEnabled = true
+        // 2) 버튼 잠시 잠그고 안내
+        drawButton.isEnabled = false
         stopButton.isEnabled = false
+        statusTextView.text = "덱을 섞는 중..."
 
-        // 4) 덱 새로 초기화 & 상태 표시 갱신
-        lifecycleScope.launch { initializeDeck() }
-        updateStatus()
+        // 3) 새 덱 요청 → 준비되면 버튼 활성화 & 상태 갱신
+        lifecycleScope.launch {
+            initializeDeck()
+            drawButton.isEnabled = true
+            updateStatus()
+        }
     }
 
     override fun onQuitGame() {
