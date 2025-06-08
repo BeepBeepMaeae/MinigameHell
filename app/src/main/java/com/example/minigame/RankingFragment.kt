@@ -57,14 +57,12 @@ class RankingFragment : DialogFragment() {
 
         val gameKey = arguments?.getString(ARG_GAME_TITLE) ?: GameTypes.QUIZ
 
-        // 타이틀 표시용 이름 변환
         val displayName = when (gameKey) {
-            GameTypes.QUIZ -> "퀴즈"
-            GameTypes.CARD -> "카드 게임"
-            GameTypes.REACTION -> "반응속도"
-            else -> gameKey
+            GameTypes.QUIZ      -> "랜덤 퀴즈"
+            GameTypes.CARD      -> "카드 게임"
+            GameTypes.REACTION  -> "반응 속도 테스트"
+            else                -> gameKey
         }
-
         tvRankingTitle.text = "$displayName 랭킹"
 
         FirebaseFirestore.getInstance()

@@ -139,7 +139,7 @@ class CardGameActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListene
                                 if (currentSum > 21) {
                                     // 플립 애니메이션 후, 버스트 → 게임 결과 순서 보장
                                     Handler(Looper.getMainLooper()).postDelayed({
-                                        SoundEffectManager.playWrong(this@CardGameActivity)
+                                        SoundEffectManager.Bust(this@CardGameActivity)
                                         Toast.makeText(
                                             this@CardGameActivity,
                                             "버스트! 0점 처리",
@@ -158,7 +158,7 @@ class CardGameActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListene
                                 if (deckRemaining <= 0) {
                                     Toast.makeText(
                                         this@CardGameActivity,
-                                        "덱 소진, 재섞습니다.",
+                                        "덱 소진, 덱을 섞습니다.",
                                         Toast.LENGTH_SHORT
                                     ).show()
                                     lifecycleScope.launch { initializeDeck() }

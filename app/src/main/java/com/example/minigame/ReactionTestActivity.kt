@@ -110,7 +110,7 @@ class ReactionTestActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuLis
 
         // Firebase로 점수 업로드
         val nickname = SharedPrefManager.getNickname(this)
-        FirebaseManager.uploadScore("Reaction", nickname, finalScore)
+        FirebaseManager.uploadScore(GameTypes.REACTION, nickname, finalScore)
 
         val resultDialog = GameResultFragment.newInstance(finalScore, "Reaction")
         resultDialog.setOnResultActionListener(object : GameResultFragment.ResultActionListener {
