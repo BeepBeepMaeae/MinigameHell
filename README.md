@@ -54,37 +54,6 @@ Android용 미니게임 모음 앱으로, 카드 게임·랜덤 퀴즈·반응 �
 
 ---
 
-## 디렉토리 구조
-
-com/example/minigame/
-├─ activities/
-│ ├─ MainActivity.kt
-│ ├─ GameSelectActivity.kt
-│ ├─ CardGameActivity.kt
-│ ├─ RandomQuizActivity.kt
-│ └─ ReactionTestActivity.kt
-├─ fragments/
-│ ├─ SettingsFragment.kt
-│ ├─ GameResultFragment.kt
-│ ├─ RankingFragment.kt
-│ └─ PauseMenuFragment.kt
-├─ data/
-│ ├─ GameInfo.kt
-│ ├─ Question.kt
-│ └─ TriviaModels.kt
-├─ net/
-│ ├─ TriviaAPI.kt
-│ └─ DeckOfCardsApi.kt
-├─ util/
-│ ├─ SharedPrefManager.kt
-│ ├─ FirebaseManager.kt
-│ ├─ BgmManager.kt
-│ └─ SoundEffectManager.kt
-└─ adapter/
-└─ GamePagerAdapter.kt
-
----
-
 ## 라이선스
 MIT License
 
