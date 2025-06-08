@@ -29,11 +29,6 @@ object SoundEffectManager {
         playEffect(context, R.raw.card_draw_sound)
     }
 
-    // 너무 빨리 눌렀을 때 사운드
-    fun playTooEarly(context: Context) {
-        playEffect(context, R.raw.too_early_sound)
-    }
-
     // 타이머 틱 사운드
     fun playTimerTick(context: Context) {
         playEffect(context, R.raw.timer_tick_sound)

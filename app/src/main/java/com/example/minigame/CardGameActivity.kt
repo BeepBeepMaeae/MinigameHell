@@ -48,6 +48,11 @@ class CardGameActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListene
     private var aceCount = 0
     private var deckRemaining = 0
 
+    override fun onResume() {
+        super.onResume()
+        BgmManager.startBgm(this, R.raw.cardgame_bgm)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_card_game)
@@ -214,13 +219,36 @@ class CardGameActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListene
 
     private fun updateStatus() {
         statusTextView.text = "누적 점수: $totalScore\n남은 시도: $triesLeft\n현재 합계: $currentSum\n덱 남은 카드: $deckRemaining"
-        stopButton.isEnabled = currentSum in 12..21
+
+        // 버튼을 항상 활성 상태로 두되, 시각적으로만 구분
+        stopButton.isEnabled = true
+        stopButton.alpha = if (currentSum in 12..21) 1f else 0.5f
     }
 
     private fun dpToPx(dp:Int) = (dp * resources.displayMetrics.density).toInt()
 
     override fun onResumeGame() = Unit
-    override fun onRetryGame() { lifecycleScope.launch{ initializeDeck() }; updateStatus() }
+// CardGameActivity.kt 에서
+
+    override fun onRetryGame() {
+        // 1) 모든 상태값 초기화
+        totalScore = 0
+        triesLeft   = 5
+        currentSum  = 0
+        aceCount    = 0
+
+        // 2) 화면에 그려진 카드 제거
+        drawnCardsContainer.removeAllViews()
+
+        // 3) 버튼 상태 초기화
+        drawButton.isEnabled = true
+        stopButton.isEnabled = false
+
+        // 4) 덱 새로 초기화 & 상태 표시 갱신
+        lifecycleScope.launch { initializeDeck() }
+        updateStatus()
+    }
+
     override fun onQuitGame() {
         startActivity(
             Intent(this, GameSelectActivity::class.java).apply{ addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) }

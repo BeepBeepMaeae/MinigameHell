@@ -90,6 +90,7 @@ class RankingFragment : DialogFragment() {
             }
 
         btnShare.setOnClickListener {
+            SoundEffectManager.playClick(requireContext())
             val shareText = tvRankingList.text.toString()
             val intent = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"

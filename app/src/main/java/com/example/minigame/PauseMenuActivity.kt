@@ -41,16 +41,19 @@ class PauseMenuFragment : DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         view.findViewById<Button>(R.id.btnResume).setOnClickListener {
+            SoundEffectManager.playClick(requireContext())
             listener?.onResumeGame()
             dismiss()
         }
 
         view.findViewById<Button>(R.id.btnRetry).setOnClickListener {
+            SoundEffectManager.playClick(requireContext())
             listener?.onRetryGame()
             dismiss()
         }
 
         view.findViewById<Button>(R.id.btnQuit).setOnClickListener {
+            SoundEffectManager.playClick(requireContext())
             listener?.onQuitGame()
             dismiss()
         }
