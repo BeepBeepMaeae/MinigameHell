@@ -5,10 +5,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import java.util.*
 
 object FirebaseManager {
-
-    private val db = FirebaseFirestore.getInstance()
-
     fun uploadScore(gameType: String, nickname: String, score: Int) {
+        val db = FirebaseFirestore.getInstance()
+
         val data = hashMapOf(
             "gameType" to gameType,
             "nickname" to nickname,

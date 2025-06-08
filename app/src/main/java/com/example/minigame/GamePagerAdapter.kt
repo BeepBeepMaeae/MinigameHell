@@ -47,11 +47,23 @@ class GamePagerAdapter(private val gameList: List<GameInfo>) :
             }
         }
 
+        // GamePagerAdapter.kt
         holder.btnRanking.setOnClickListener {
             SoundEffectManager.playClick(holder.itemView.context)
-            val fragment = RankingFragment.newInstance(game.title)
-            val fragmentManager = (holder.itemView.context as AppCompatActivity).supportFragmentManager
-            fragment.show(fragmentManager, "RankingFragment")
+
+            // 한글 표시명이 아니라 internal key를 매핑
+            val gameKey = when (game.title) {
+                "랜덤 퀴즈"          -> GameTypes.QUIZ      // "Quiz"
+                "카드 게임"          -> GameTypes.CARD      // "CardGame"
+                "반응 속도 테스트"   -> GameTypes.REACTION  // "ReactionTest"
+                else                 -> GameTypes.QUIZ
+            }
+
+            val fragment = RankingFragment.newInstance(gameKey)
+            fragment.show(
+                (holder.itemView.context as AppCompatActivity).supportFragmentManager,
+                "RankingFragment"
+            )
         }
     }
 

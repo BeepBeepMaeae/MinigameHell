@@ -1,29 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/reactionRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF">
+    android:padding="24dp"
+    android:background="@android:color/white">
 
-    <TextView
-        android:id="@+id/tvInfo"
-        android:text="준비하세요..."
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_centerInParent="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <Button
-        android:id="@+id/btnPause"
-        android:text="⏸️"
-        android:backgroundTint="#FF9800"
-        android:textColor="#FFFFFF"
-        android:textSize="20sp"
+    <!-- 프로필 이미지 -->
+    <ImageView
+        android:id="@+id/profileImageView"
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        android:layout_margin="16dp"/>
+        android:layout_margin="8dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_profile_placeholder"
+        android:background="@drawable/round_border" />
+
+    <!-- 안내 텍스트 -->
+    <TextView
+        android:id="@+id/tvInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="준비하세요..."
+        android:textSize="24sp"
+        android:layout_centerInParent="true" />
+
+    <!-- 일시정지 버튼 -->
+    <Button
+        android:id="@+id/btnPause"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="일시정지"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_margin="8dp"
+        android:backgroundTint="@color/orange"
+        android:textColor="@android:color/white" />
+
+
 </RelativeLayout>

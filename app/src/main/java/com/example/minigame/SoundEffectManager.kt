@@ -2,19 +2,57 @@ package com.example.minigame
 
 import android.content.Context
 import android.media.MediaPlayer
+import androidx.annotation.RawRes
 
 object SoundEffectManager {
     private var clickPlayer: MediaPlayer? = null
 
+    // 기존 클릭 효과음
     fun playClick(context: Context) {
-        val pref = context.getSharedPreferences("minigame_prefs", Context.MODE_PRIVATE)
-        val volume = pref.getInt("effect_volume", 50) / 100f
+        playEffect(context, R.raw.click_sound)
+    }
 
-        clickPlayer = MediaPlayer.create(context, R.raw.click_sound)
-        clickPlayer?.setVolume(volume, volume)
-        clickPlayer?.setOnCompletionListener {
-            it.release()
+    // 범용 효과음 재생 함수
+    fun playEffect(context: Context, @RawRes resId: Int) {
+        val volume = context
+            .getSharedPreferences("minigame_prefs", Context.MODE_PRIVATE)
+            .getInt("effect_volume", 50) / 100f
+        MediaPlayer.create(context, resId).apply {
+            setVolume(volume, volume)
+            setOnCompletionListener { it.release() }
+            start()
         }
-        clickPlayer?.start()
+    }
+
+    // 카드 뽑기 사운드
+    fun playCardDraw(context: Context) {
+        playEffect(context, R.raw.card_draw_sound)
+    }
+
+    // 너무 빨리 눌렀을 때 사운드
+    fun playTooEarly(context: Context) {
+        playEffect(context, R.raw.too_early_sound)
+    }
+
+    // 타이머 틱 사운드
+    fun playTimerTick(context: Context) {
+        playEffect(context, R.raw.timer_tick_sound)
+    }
+
+    fun Bust(context: Context) {
+        playEffect(context, R.raw.bust)
+    }
+
+    // 정답/오답 사운드
+    fun playCorrect(context: Context) {
+        playEffect(context, R.raw.correct_sound)
+    }
+    fun playWrong(context: Context) {
+        playEffect(context, R.raw.wrong_sound)
+    }
+
+    // 결과 화면 오픈 사운드
+    fun playResult(context: Context) {
+        playEffect(context, R.raw.result_sound)
     }
 }
