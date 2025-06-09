@@ -56,7 +56,7 @@ class GameResultFragment : DialogFragment() {
 
             val gameKey = when (game) {
                 "퀴즈" -> GameTypes.QUIZ
-                "카드 게임" -> GameTypes.CARD
+                "블랙 잭" -> GameTypes.CARD
                 "반응속도" -> GameTypes.REACTION
                 else -> GameTypes.QUIZ
             }
@@ -92,7 +92,7 @@ class GameResultFragment : DialogFragment() {
             val game = arguments?.getString(ARG_GAME) ?: "?"
             val gameKey = when (game) {
                 "퀴즈" -> GameTypes.QUIZ
-                "카드 게임" -> GameTypes.CARD
+                "블랙 잭" -> GameTypes.CARD
                 "반응속도" -> GameTypes.REACTION
                 else -> GameTypes.QUIZ // 기본값
             }

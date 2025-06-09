@@ -24,7 +24,7 @@ class GameSelectActivity : AppCompatActivity() {
 
         viewPager = findViewById(R.id.viewPagerGames)
         gameList = listOf(
-            GameInfo("카드 게임", R.drawable.ic_card_thumbnail),
+            GameInfo("블랙 잭", R.drawable.ic_card_thumbnail),
             GameInfo("반응 속도 테스트", R.drawable.ic_reaction_thumbnail),
             GameInfo("랜덤 퀴즈", R.drawable.ic_quiz_thumbnail)
         )
