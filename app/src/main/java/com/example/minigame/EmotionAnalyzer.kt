@@ -9,11 +9,12 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 object EmotionAnalyzer {
-    private lateinit var interpreter: Interpreter
+    private var interpreter: Interpreter? = null
     private val labels = listOf("angry", "happy", "neutral", "sad")
 
     @RequiresApi(Build.VERSION_CODES.CUPCAKE)
     fun init(context: Context) {
+        if (interpreter != null) return  // 이미 초기화되어 있으면 무시
         val fd = context.assets.openFd("emotion_model.tflite")
         val inputStream = fd.createInputStream()
         val fileChannel = inputStream.channel
@@ -23,7 +24,12 @@ object EmotionAnalyzer {
         interpreter = Interpreter(buffer)
     }
 
+    fun isInitialized(): Boolean = interpreter != null
+
     fun predict(bitmap: Bitmap): String {
+        val localInterpreter = interpreter
+        requireNotNull(localInterpreter) { "EmotionAnalyzer must be initialized by calling init(context) before use." }
+
         val resized = Bitmap.createScaledBitmap(bitmap, 48, 48, true)
         val gray = Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(gray)
@@ -41,7 +47,7 @@ object EmotionAnalyzer {
         }
 
         val output = Array(1) { FloatArray(labels.size) }
-        interpreter.run(buffer, output)
+        localInterpreter.run(buffer, output)
         val index = output[0].indices.maxByOrNull { output[0][it] } ?: 0
         return labels[index]
     }

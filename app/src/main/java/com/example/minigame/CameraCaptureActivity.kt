@@ -24,16 +24,21 @@ class CameraCaptureActivity : AppCompatActivity() {
         if (requestCode == CAMERA_REQUEST_CODE && resultCode == RESULT_OK) {
             val bitmap = data?.extras?.get("data") as? Bitmap
             if (bitmap != null) {
-                // bitmap 압축해서 byte array로 전달
+                // 압축 후 byte array로 전달
                 val stream = java.io.ByteArrayOutputStream()
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
                 val byteArray = stream.toByteArray()
 
                 val resultIntent = Intent()
-                resultIntent.putExtra("image", byteArray)
+                resultIntent.putExtra("captured_image", byteArray)  // ✅ key 수정
                 setResult(Activity.RESULT_OK, resultIntent)
+            } else {
+                setResult(Activity.RESULT_CANCELED)
             }
+        } else {
+            setResult(Activity.RESULT_CANCELED)
         }
+
         finish()
     }
 }
