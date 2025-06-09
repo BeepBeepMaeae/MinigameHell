@@ -42,6 +42,8 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
     private var score = 0
     private var currentTimer: CountDownTimer? = null
     private var timeLimit = 15000L  // 기본 시간
+    private var lastEmotion: String? = null
+
     private val REQUEST_FACE_CAPTURE = 777
 
     private val triviaApi: TriviaApi by lazy {
@@ -99,6 +101,8 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
                     questionList.addAll(fetched)
                     score = 0
                     currentIndex = 0
+                    lastEmotion = null
+                    timeLimit = 15000L
                     startNextQuestion()
                 }
             } catch (e: Exception) {
@@ -115,6 +119,7 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
             return
         }
 
+        // 다음 문제 준비
         val q = questionList[currentIndex]
         tvScore.text    = "점수: $score"
         tvQuestion.text = q.question
@@ -123,8 +128,26 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
         buttons.forEachIndexed { idx, btn ->
             btn.text               = q.options[idx]
             btn.isEnabled          = true
+            btn.alpha              = 1f
             btn.backgroundTintList = ContextCompat.getColorStateList(this, R.color.orange)
             btn.setTextColor(Color.WHITE)
+        }
+
+        // 웃는 얼굴이 인식되어 lastEmotion이 "happy"라면 오답 버튼 하나를 투명화
+        if (lastEmotion?.lowercase() == "happy") {
+            val wrongButtons = buttons.filterIndexed { idx, _ -> idx != q.correctIndex }
+            if (wrongButtons.isNotEmpty()) {
+                wrongButtons.random().apply {
+                    alpha = 0.3f
+                    isEnabled = false
+                }
+            }
+            // 한 번만 적용
+            lastEmotion = null
+        }
+
+        // 각 선택지에 클릭 리스너 설정
+        buttons.forEachIndexed { idx, btn ->
             btn.setOnClickListener {
                 currentTimer?.cancel()
                 buttons.forEach { it.isEnabled = false }
@@ -136,7 +159,8 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
                     SoundEffectManager.playCorrect(this)
                 } else {
                     btn.backgroundTintList = ColorStateList.valueOf(Color.RED)
-                    buttons[q.correctIndex].backgroundTintList = ColorStateList.valueOf(Color.GREEN)
+                    buttons[q.correctIndex].backgroundTintList =
+                        ColorStateList.valueOf(Color.GREEN)
                     SoundEffectManager.playWrong(this)
                 }
 
@@ -148,6 +172,7 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
             }
         }
 
+        // 타이머 시작
         tvTimer.text = (timeLimit / 1000).toString()
         currentTimer = object : CountDownTimer(timeLimit, 1000) {
             override fun onTick(millisUntilFinished: Long) {
@@ -164,7 +189,8 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
             }
             override fun onFinish() {
                 buttons.forEach { it.isEnabled = false }
-                buttons[q.correctIndex].backgroundTintList = ColorStateList.valueOf(Color.GREEN)
+                buttons[q.correctIndex].backgroundTintList =
+                    ColorStateList.valueOf(Color.GREEN)
                 SoundEffectManager.playWrong(this@RandomQuizActivity)
                 Handler(Looper.getMainLooper()).postDelayed({
                     currentIndex++
@@ -175,8 +201,61 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
     }
 
     private fun StartFaceCapture() {
-        val intent = Intent(this, CameraCaptureActivity::class.java)
-        startActivityForResult(intent, REQUEST_FACE_CAPTURE)
+        Intent(this, CameraCaptureActivity::class.java).also {
+            startActivityForResult(it, REQUEST_FACE_CAPTURE)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == REQUEST_FACE_CAPTURE && resultCode == RESULT_OK && data != null) {
+            if (!EmotionAnalyzer.isInitialized()) {
+                EmotionAnalyzer.init(this)
+            }
+
+            val byteArray = data.getByteArrayExtra("captured_image")
+            val bitmap = byteArray?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }
+            if (bitmap != null) {
+                val emotion = EmotionAnalyzer.predict(bitmap)
+                Log.d("Emotion", "분석 결과: $emotion")
+
+                // 감정에 따른 시간 제한 조정
+                adjustDifficultyByEmotion(emotion)
+                // 웃는(happy) 얼굴이면 다음 문제에서 오답 숨기기
+                lastEmotion = emotion
+
+            } else {
+                Log.e("onActivityResult", "bitmap decode 실패 또는 이미지 데이터 없음")
+            }
+            // 얼굴 인식 뒤 바로 다음 문제 표시
+            startNextQuestion()
+        }
+    }
+
+    private fun adjustDifficultyByEmotion(emotion: String) {
+        when (emotion.lowercase()) {
+            "angry" -> {
+                timeLimit = 20000L
+                Toast.makeText(this, "화난 얼굴! 제한시간 20초!", Toast.LENGTH_SHORT).show()
+            }
+            "happy" -> {
+                timeLimit = 30000L
+                Toast.makeText(this, "기분 좋네요! 제한시간 30초!", Toast.LENGTH_SHORT).show()
+            }
+            "neutral" -> {
+                timeLimit = 15000L
+                Toast.makeText(this, "무표정이네요. 제한시간 15초!", Toast.LENGTH_SHORT).show()
+            }
+            "sad" -> {
+                timeLimit = 18000L
+                Toast.makeText(this, "슬퍼 보이네요. 제한시간 18초!", Toast.LENGTH_SHORT).show()
+            }
+            else -> {
+                timeLimit = 15000L
+                Toast.makeText(this, "감정 인식 실패. 기본 시간 15초.", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun showResult() {
@@ -217,58 +296,5 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
                 .apply { addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) }
         )
         finish()
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == REQUEST_FACE_CAPTURE && resultCode == RESULT_OK && data != null) {
-            if (!EmotionAnalyzer.isInitialized()) {
-                EmotionAnalyzer.init(this)
-            }
-
-            val byteArray = data.getByteArrayExtra("captured_image")
-            if (byteArray != null) {
-                val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-                if (bitmap != null) {
-                    val emotion = EmotionAnalyzer.predict(bitmap)
-                    Log.d("Emotion", "분석 결과: $emotion")
-
-                    adjustDifficultyByEmotion(emotion)
-                    startNextQuestion()
-                } else {
-                    Log.e("onActivityResult", "bitmap decode 실패")
-                    startNextQuestion()
-                }
-            } else {
-                Log.e("onActivityResult", "이미지 데이터 없음")
-                startNextQuestion()
-            }
-        }
-    }
-
-    private fun adjustDifficultyByEmotion(emotion: String) {
-        when (emotion.lowercase()) {
-            "angry" -> {
-                timeLimit = 10000L
-                Toast.makeText(this, "화난 얼굴! 제한시간 10초!", Toast.LENGTH_SHORT).show()
-            }
-            "happy" -> {
-                timeLimit = 15000L
-                Toast.makeText(this, "기분 좋네요! 제한시간 15초!", Toast.LENGTH_SHORT).show()
-            }
-            "neutral" -> {
-                timeLimit = 12000L
-                Toast.makeText(this, "무표정이네요. 제한시간 12초!", Toast.LENGTH_SHORT).show()
-            }
-            "sad" -> {
-                timeLimit = 18000L
-                Toast.makeText(this, "슬퍼 보이네요. 제한시간 18초!", Toast.LENGTH_SHORT).show()
-            }
-            else -> {
-                timeLimit = 15000L
-                Toast.makeText(this, "감정 인식 실패. 기본 시간 15초.", Toast.LENGTH_SHORT).show()
-            }
-        }
     }
 }

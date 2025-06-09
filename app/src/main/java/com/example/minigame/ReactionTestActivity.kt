@@ -24,13 +24,10 @@ class ReactionTestActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuLis
     private var isWaitingForTouch = false
     private var isLocked = false
     private var startTime = 0L
-    private val reactionTimes = mutableListOf<Long>()
+    private val attemptScores = mutableListOf<Int>()
     private val handler = Handler(Looper.getMainLooper())
     private var round = 0
     private var pendingRunnable: Runnable? = null
-
-    // 잘못 클릭에 대한 패널티 시간 (10000ms = 0점 처리)
-    private val PENALTY_TIME = 10000L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,7 +50,8 @@ class ReactionTestActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuLis
             if (isWaitingForTouch) {
                 SoundEffectManager.playCorrect(this)
                 val reactionTime = System.currentTimeMillis() - startTime
-                reactionTimes.add(reactionTime)
+                val scoreForAttempt = 200 - (reactionTime / 10).toInt()
+                attemptScores.add(scoreForAttempt)
                 isWaitingForTouch = false
                 round++
                 nextOrFinish()
@@ -61,7 +59,7 @@ class ReactionTestActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuLis
                 SoundEffectManager.playWrong(this)
                 tvInfo.text = "너무 빨리 누르셨습니다!"
                 mainLayout.setBackgroundColor(Color.RED)
-                reactionTimes.add(PENALTY_TIME)
+                attemptScores.add(0)
                 pendingRunnable?.let { handler.removeCallbacks(it) }
                 isWaitingForTouch = false
                 isLocked = true
@@ -113,10 +111,7 @@ class ReactionTestActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuLis
     }
 
     private fun showResult() {
-        val avgReaction = reactionTimes.average().toInt()
-        val rawScore   = 10000 - avgReaction
-        val finalScore = if (rawScore < 0) 0 else rawScore
-
+        val finalScore = attemptScores.sum()
         val nickname = SharedPrefManager.getNickname(this)
         FirebaseManager.uploadScore(GameTypes.REACTION, nickname, finalScore)
 
@@ -134,15 +129,12 @@ class ReactionTestActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuLis
         }.show(supportFragmentManager, "GameResultFragment")
     }
 
-    // PauseMenuFragment 콜백
-    override fun onResumeGame() {
-        // 아무 동작 없이 그대로 대기
-    }
+    // PauseMenuFragment callbacks
+    override fun onResumeGame() = Unit
 
     override fun onRetryGame() {
-        // 콜백 제거 → 상태 초기화 → 첫 라운드 시작
         pendingRunnable?.let { handler.removeCallbacks(it) }
-        reactionTimes.clear()
+        attemptScores.clear()
         round = 0
         isWaitingForTouch = false
         isLocked = false

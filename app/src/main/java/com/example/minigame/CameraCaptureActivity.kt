@@ -30,7 +30,7 @@ class CameraCaptureActivity : AppCompatActivity() {
                 val byteArray = stream.toByteArray()
 
                 val resultIntent = Intent()
-                resultIntent.putExtra("captured_image", byteArray)  // ✅ key 수정
+                resultIntent.putExtra("captured_image", byteArray)  // key 수정
                 setResult(Activity.RESULT_OK, resultIntent)
             } else {
                 setResult(Activity.RESULT_CANCELED)
