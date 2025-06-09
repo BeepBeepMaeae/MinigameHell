@@ -9,8 +9,8 @@
     <!-- 프로필 이미지 -->
     <ImageView
         android:id="@+id/profileImageView"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:layout_width="95dp"
+        android:layout_height="95dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:layout_margin="8dp"

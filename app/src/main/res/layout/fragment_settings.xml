@@ -30,8 +30,8 @@
 
     <ImageView
         android:id="@+id/imgProfile"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="175dp"
+        android:layout_height="175dp"
         android:layout_marginBottom="16dp"
         android:scaleType="centerCrop"
         android:src="@drawable/ic_profile_placeholder" />

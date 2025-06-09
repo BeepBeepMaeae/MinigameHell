@@ -10,8 +10,8 @@
     <!-- 프로필 이미지 -->
     <ImageView
         android:id="@+id/profileImageView"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:layout_width="95dp"
+        android:layout_height="95dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:src="@drawable/ic_profile_placeholder"
@@ -44,19 +44,20 @@
     <!-- 카드 뽑기 버튼 -->
     <Button
         android:id="@+id/drawButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:text="카드 뽑기"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="72dp"
-        android:backgroundTint="@color/orange"
-        android:textColor="@android:color/white" />
+        android:backgroundTint="#FF9800"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
     <!-- 스톱 버튼 -->
     <Button
         android:id="@+id/stopButton"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="스톱"
         android:enabled="false"
@@ -64,7 +65,8 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="16dp"
         android:backgroundTint="@color/orange"
-        android:textColor="@android:color/white" />
+        android:textColor="@android:color/white"
+        android:textSize="20sp" />
 
     <!-- 일시정지 버튼 -->
     <Button

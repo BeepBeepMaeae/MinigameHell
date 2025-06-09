@@ -6,7 +6,7 @@
     android:padding="24dp"
     android:background="@android:color/white">
 
-    <!-- 상단: 게임 제목 및 프로필 이미지 -->
+    <!-- 상단: 게임 제목 -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -18,17 +18,6 @@
             android:text="게임 랭킹"
             android:textSize="20sp"
             android:textStyle="bold" />
-
-        <ImageView
-            android:id="@+id/profileImageView"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:layout_margin="8dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_profile_placeholder"
-            android:background="@drawable/round_border" />
     </RelativeLayout>
 
     <!-- 랭킹 리스트 -->
