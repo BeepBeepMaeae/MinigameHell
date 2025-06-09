@@ -38,7 +38,7 @@ class GamePagerAdapter(private val gameList: List<GameInfo>) :
             SoundEffectManager.playClick(holder.itemView.context)
             val context = holder.itemView.context
             val intent = when (game.title) {
-                "카드 게임" -> Intent(context, CardGameActivity::class.java)
+                "블랙 잭" -> Intent(context, CardGameActivity::class.java)
                 "반응 속도 테스트" -> Intent(context, ReactionTestActivity::class.java)
                 "랜덤 퀴즈" -> Intent(context, RandomQuizActivity::class.java)
                 else -> null
@@ -50,7 +50,7 @@ class GamePagerAdapter(private val gameList: List<GameInfo>) :
         holder.btnDescription.setOnClickListener {
             SoundEffectManager.playClick(holder.itemView.context)
             val imageRes = when (game.title) {
-                "카드 게임"           -> R.drawable.desc_cardgame
+                "블랙 잭"           -> R.drawable.desc_cardgame
                 "반응 속도 테스트"     -> R.drawable.desc_reaction
                 "랜덤 퀴즈"           -> R.drawable.desc_quiz
                 else                   -> R.drawable.desc_generic
@@ -69,7 +69,7 @@ class GamePagerAdapter(private val gameList: List<GameInfo>) :
             SoundEffectManager.playClick(holder.itemView.context)
             val gameKey = when (game.title) {
                 "랜덤 퀴즈"        -> GameTypes.QUIZ
-                "카드 게임"        -> GameTypes.CARD
+                "블랙 잭"        -> GameTypes.CARD
                 "반응 속도 테스트" -> GameTypes.REACTION
                 else               -> GameTypes.QUIZ
             }

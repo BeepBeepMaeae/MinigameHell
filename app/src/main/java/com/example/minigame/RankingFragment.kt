@@ -55,7 +55,7 @@ class RankingFragment : DialogFragment() {
 
         val displayName = when (gameKey) {
             GameTypes.QUIZ      -> "랜덤 퀴즈"
-            GameTypes.CARD      -> "카드 게임"
+            GameTypes.CARD      -> "블랙 잭"
             GameTypes.REACTION  -> "반응 속도 테스트"
             else                -> gameKey
         }
