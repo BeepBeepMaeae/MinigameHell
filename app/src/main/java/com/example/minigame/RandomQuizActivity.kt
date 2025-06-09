@@ -12,6 +12,7 @@ import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
@@ -39,6 +40,9 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
     private var currentIndex = 0
     private var score = 0
     private var currentTimer: CountDownTimer? = null
+    private var timeLimit = 15000L  // 기본 시간
+    private val REQUEST_FACE_CAPTURE = 777
+
 
     private val triviaApi: TriviaApi by lazy {
         Retrofit.Builder()
@@ -142,7 +146,8 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
                 tvScore.text = "점수: $score"
                 Handler(Looper.getMainLooper()).postDelayed({
                     currentIndex++
-                    startNextQuestion()
+                    StartFaceCapture()
+                    //startNextQuestion()
                 }, 3000L)
             }
         }
@@ -174,6 +179,11 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
         }.start()
     }
 
+    private fun StartFaceCapture() {
+        val intent = Intent(this, CameraCaptureActivity::class.java)
+        startActivityForResult(intent, REQUEST_FACE_CAPTURE)
+    }
+
     private fun showResult() {
         currentTimer?.cancel()
         // BgmManager.stopBgm() 제거 → BGM은 계속 재생
@@ -202,6 +212,7 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
         }.show(supportFragmentManager, "GameResultFragment")
     }
 
+
     // PauseMenuFragment 콜백
     override fun onResumeGame() = Unit
 
@@ -218,4 +229,28 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
         )
         finish()
     }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_FACE_CAPTURE && resultCode == RESULT_OK) {
+            val byteArray = data?.getByteArrayExtra("image")
+            byteArray?.let {
+                val bitmap = android.graphics.BitmapFactory.decodeByteArray(it, 0, it.size)
+                val emotion = EmotionAnalyzer.predict(bitmap)
+
+                timeLimit = when (emotion) {
+                    "happy" -> 7000L
+                    "neutral" -> 10000L
+                    "sad", "angry" -> 13000L
+                    else -> 10000L
+                }
+
+                Toast.makeText(this, "감정: $emotion → 제한시간 ${timeLimit / 1000}초", Toast.LENGTH_SHORT).show()
+            }
+
+            // 감정 예측 끝났으니 다음 문제로
+            startNextQuestion()
+        }
+    }
+
 }
