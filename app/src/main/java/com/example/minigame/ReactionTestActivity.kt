@@ -1,6 +1,7 @@
 package com.example.minigame
 
 import android.content.Intent
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -9,7 +10,6 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import kotlin.random.Random
@@ -22,11 +22,15 @@ class ReactionTestActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuLis
     private lateinit var profileImageView: ImageView
 
     private var isWaitingForTouch = false
+    private var isLocked = false
     private var startTime = 0L
     private val reactionTimes = mutableListOf<Long>()
     private val handler = Handler(Looper.getMainLooper())
     private var round = 0
     private var pendingRunnable: Runnable? = null
+
+    // 잘못 클릭에 대한 패널티 시간 (10000ms = 0점 처리)
+    private val PENALTY_TIME = 10000L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,7 +41,6 @@ class ReactionTestActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuLis
         mainLayout = findViewById(R.id.reactionRoot)
         profileImageView = findViewById(R.id.profileImageView)
 
-        // 프로필 이미지 표시
         SharedPrefManager.getProfileImageUri(this)?.let {
             Glide.with(this).load(Uri.parse(it)).into(profileImageView)
         }
@@ -45,34 +48,33 @@ class ReactionTestActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuLis
         startRound()
 
         mainLayout.setOnClickListener {
+            if (isLocked) return@setOnClickListener
+
             if (isWaitingForTouch) {
+                SoundEffectManager.playCorrect(this)
                 val reactionTime = System.currentTimeMillis() - startTime
                 reactionTimes.add(reactionTime)
                 isWaitingForTouch = false
                 round++
-
-                if (round >= 5) {
-                    showResult()
-                } else {
-                    startRound()
-                }
+                nextOrFinish()
             } else {
-                // 너무 빨리 눌렀을 때
-                SoundEffectManager.playTooEarly(this@ReactionTestActivity)
-                Toast.makeText(
-                    this@ReactionTestActivity,
-                    "너무 빨리 누르셨습니다!",
-                    Toast.LENGTH_SHORT
-                ).show()
-                // 기존 대기 콜백 제거
+                SoundEffectManager.playWrong(this)
+                tvInfo.text = "너무 빨리 누르셨습니다!"
+                mainLayout.setBackgroundColor(Color.RED)
+                reactionTimes.add(PENALTY_TIME)
                 pendingRunnable?.let { handler.removeCallbacks(it) }
                 isWaitingForTouch = false
-                // 1초 뒤에 다음 라운드 자동 시작
-                handler.postDelayed({ startRound() }, 1000L)
+                isLocked = true
+                handler.postDelayed({
+                    isLocked = false
+                    round++
+                    nextOrFinish()
+                }, 3000L)
             }
         }
 
         btnPause.setOnClickListener {
+            pendingRunnable?.let { handler.removeCallbacks(it) }
             SoundEffectManager.playClick(this)
             PauseMenuFragment().show(supportFragmentManager, "PauseMenuFragment")
         }
@@ -80,62 +82,72 @@ class ReactionTestActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuLis
 
     override fun onResume() {
         super.onResume()
-        // 반응 속도 테스트 화면에서는 배경음악 완전 중단
         BgmManager.stopBgm()
     }
 
     override fun onPause() {
         super.onPause()
-        // 남은 콜백 모두 제거
         pendingRunnable?.let { handler.removeCallbacks(it) }
     }
 
     private fun startRound() {
         tvInfo.text = "준비하세요."
-        mainLayout.setBackgroundColor(android.graphics.Color.WHITE)
+        mainLayout.setBackgroundColor(Color.WHITE)
+        isWaitingForTouch = false
+        isLocked = false
+        pendingRunnable?.let { handler.removeCallbacks(it) }
 
-        val delay = Random.nextLong(1500L, 3000L)
+        val delay = Random.nextLong(1500L, 5500L)
         pendingRunnable = Runnable {
             tvInfo.text = "터치하세요!"
-            mainLayout.setBackgroundColor(android.graphics.Color.GREEN)
+            mainLayout.setBackgroundColor(Color.GREEN)
             startTime = System.currentTimeMillis()
             isWaitingForTouch = true
         }
         handler.postDelayed(pendingRunnable!!, delay)
     }
 
+    private fun nextOrFinish() {
+        if (round >= 5) showResult()
+        else startRound()
+    }
+
     private fun showResult() {
         val avgReaction = reactionTimes.average().toInt()
-        val finalScore = 10000 - avgReaction
+        val rawScore   = 10000 - avgReaction
+        val finalScore = if (rawScore < 0) 0 else rawScore
 
-        // Firebase로 점수 업로드
         val nickname = SharedPrefManager.getNickname(this)
         FirebaseManager.uploadScore(GameTypes.REACTION, nickname, finalScore)
 
-        val resultDialog = GameResultFragment.newInstance(finalScore, "Reaction")
-        resultDialog.setOnResultActionListener(object : GameResultFragment.ResultActionListener {
-            override fun onRetry() {
-                reactionTimes.clear()
-                round = 0
-                startRound()
-            }
-
-            override fun onQuit() {
-                startActivity(
-                    Intent(this@ReactionTestActivity, GameSelectActivity::class.java)
-                        .apply { addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) }
-                )
-                finish()
-            }
-        })
-        resultDialog.show(supportFragmentManager, "GameResultFragment")
+        GameResultFragment.newInstance(finalScore, GameTypes.REACTION).apply {
+            setOnResultActionListener(object : GameResultFragment.ResultActionListener {
+                override fun onRetry() = onRetryGame()
+                override fun onQuit() {
+                    startActivity(
+                        Intent(this@ReactionTestActivity, GameSelectActivity::class.java)
+                            .apply { addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) }
+                    )
+                    finish()
+                }
+            })
+        }.show(supportFragmentManager, "GameResultFragment")
     }
 
-    override fun onResumeGame() = Unit
+    // PauseMenuFragment 콜백
+    override fun onResumeGame() {
+        // 아무 동작 없이 그대로 대기
+    }
 
     override fun onRetryGame() {
+        // 콜백 제거 → 상태 초기화 → 첫 라운드 시작
+        pendingRunnable?.let { handler.removeCallbacks(it) }
         reactionTimes.clear()
         round = 0
+        isWaitingForTouch = false
+        isLocked = false
+        tvInfo.text = "준비하세요."
+        mainLayout.setBackgroundColor(Color.WHITE)
         startRound()
     }
 

@@ -63,6 +63,10 @@ class SettingsFragment : DialogFragment() {
 
         // 프로필 이미지 변경
         imgProfile.setOnClickListener { imagePickerLauncher.launch("image/*") }
+        imgProfile.setOnClickListener {
+           SoundEffectManager.playClick(requireContext())
+           imagePickerLauncher.launch("image/*")
+        }
 
         // 실시간 배경음 볼륨 조정
         seekBackgroundVolume.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
@@ -91,6 +95,14 @@ class SettingsFragment : DialogFragment() {
                 .apply()
             Toast.makeText(requireContext(), "설정이 저장되었습니다", Toast.LENGTH_SHORT).show()
             dismiss()
+        }
+        btnSaveSettings.setOnClickListener {
+           SoundEffectManager.playClick(requireContext())
+           sharedPref.edit()
+               .putString("nickname", editNickname.text.toString())
+               .apply()
+           Toast.makeText(requireContext(), "설정이 저장되었습니다", Toast.LENGTH_SHORT).show()
+           dismiss()
         }
     }
 

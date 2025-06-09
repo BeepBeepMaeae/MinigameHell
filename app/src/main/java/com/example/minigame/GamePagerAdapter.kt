@@ -17,6 +17,7 @@ class GamePagerAdapter(private val gameList: List<GameInfo>) :
         val imgThumbnail: ImageView = itemView.findViewById(R.id.imgThumbnail)
         val tvGameTitle: TextView = itemView.findViewById(R.id.tvGameTitle)
         val btnStartGame: Button = itemView.findViewById(R.id.btnStartGame)
+        val btnDescription: Button = itemView.findViewById(R.id.btnDescription)
         val btnRanking: Button = itemView.findViewById(R.id.btnRanking)
     }
 
@@ -32,9 +33,9 @@ class GamePagerAdapter(private val gameList: List<GameInfo>) :
         holder.imgThumbnail.setImageResource(game.thumbnailResId)
         holder.tvGameTitle.text = game.title
 
+        // 1) 게임 시작 버튼: Activity 호출
         holder.btnStartGame.setOnClickListener {
             SoundEffectManager.playClick(holder.itemView.context)
-
             val context = holder.itemView.context
             val intent = when (game.title) {
                 "카드 게임" -> Intent(context, CardGameActivity::class.java)
@@ -42,28 +43,43 @@ class GamePagerAdapter(private val gameList: List<GameInfo>) :
                 "랜덤 퀴즈" -> Intent(context, RandomQuizActivity::class.java)
                 else -> null
             }
-            intent?.let {
-                context.startActivity(it)
-            }
+            intent?.let { context.startActivity(it) }
         }
 
-        // GamePagerAdapter.kt
+        // 2) 설명 버튼: DialogFragment 띄우기
+        holder.btnDescription.setOnClickListener {
+            SoundEffectManager.playClick(holder.itemView.context)
+            val imageRes = when (game.title) {
+                "카드 게임"           -> R.drawable.desc_cardgame
+                "반응 속도 테스트"     -> R.drawable.desc_reaction
+                "랜덤 퀴즈"           -> R.drawable.desc_quiz
+                else                   -> R.drawable.desc_generic
+            }
+            GameDescriptionFragment
+                .newInstance(imageRes)
+                .show(
+                    (holder.itemView.context as AppCompatActivity)
+                        .supportFragmentManager,
+                    "GameDescription"
+                )
+        }
+
+        // 3) 순위 버튼: RankingFragment 띄우기
         holder.btnRanking.setOnClickListener {
             SoundEffectManager.playClick(holder.itemView.context)
-
-            // 한글 표시명이 아니라 internal key를 매핑
             val gameKey = when (game.title) {
-                "랜덤 퀴즈"          -> GameTypes.QUIZ      // "Quiz"
-                "카드 게임"          -> GameTypes.CARD      // "CardGame"
-                "반응 속도 테스트"   -> GameTypes.REACTION  // "ReactionTest"
-                else                 -> GameTypes.QUIZ
+                "랜덤 퀴즈"        -> GameTypes.QUIZ
+                "카드 게임"        -> GameTypes.CARD
+                "반응 속도 테스트" -> GameTypes.REACTION
+                else               -> GameTypes.QUIZ
             }
-
-            val fragment = RankingFragment.newInstance(gameKey)
-            fragment.show(
-                (holder.itemView.context as AppCompatActivity).supportFragmentManager,
-                "RankingFragment"
-            )
+            RankingFragment
+                .newInstance(gameKey)
+                .show(
+                    (holder.itemView.context as AppCompatActivity)
+                        .supportFragmentManager,
+                    "RankingFragment"
+                )
         }
     }
 

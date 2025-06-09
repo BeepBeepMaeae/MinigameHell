@@ -33,6 +33,16 @@
         android:layout_margin="8dp"/>
 
     <Button
+        android:id="@+id/btnDescription"
+        android:text="게임 설명"
+        android:backgroundTint="#FF9800"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"/>
+
+    <Button
         android:id="@+id/btnRanking"
         android:text="랭킹 보기"
         android:backgroundTint="#FF9800"

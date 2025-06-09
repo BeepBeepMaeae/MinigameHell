@@ -41,6 +41,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnSettings.setOnClickListener {
+            SoundEffectManager.playClick(this)
             val settingsFragment = SettingsFragment()
             settingsFragment.show(supportFragmentManager, "SettingsFragment")
         }

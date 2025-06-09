@@ -96,10 +96,6 @@ class GameResultFragment : DialogFragment() {
                 "반응속도" -> GameTypes.REACTION
                 else -> GameTypes.QUIZ // 기본값
             }
-
-            val rankingFragment = RankingFragment.newInstance(gameKey)
-            rankingFragment.show(parentFragmentManager, "RankingFragment")
-
             dismiss()
         }
 
