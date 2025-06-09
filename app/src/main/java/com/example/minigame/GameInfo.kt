@@ -4,3 +4,4 @@ data class GameInfo(
     val title: String,
     val thumbnailResId: Int
 )
+//
