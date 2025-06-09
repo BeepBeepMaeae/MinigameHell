@@ -28,6 +28,7 @@
         <activity android:name=".CardGameActivity" />
         <activity android:name=".ReactionTestActivity" />
         <activity android:name=".RandomQuizActivity" />
+        <activity android:name=".CameraCaptureActivity" />
     </application>
 
 </manifest>

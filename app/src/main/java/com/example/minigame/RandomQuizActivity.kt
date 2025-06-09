@@ -2,6 +2,7 @@ package com.example.minigame
 
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
@@ -12,6 +13,7 @@ import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
@@ -39,6 +41,8 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
     private var currentIndex = 0
     private var score = 0
     private var currentTimer: CountDownTimer? = null
+    private var timeLimit = 15000L  // 기본 시간
+    private val REQUEST_FACE_CAPTURE = 777
 
     private val triviaApi: TriviaApi by lazy {
         Retrofit.Builder()
@@ -68,7 +72,6 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
 
         btnPause.setOnClickListener {
             SoundEffectManager.playClick(this)
-            // 일시정지해도 BGM·타이머는 멈추지 않음
             PauseMenuFragment().show(supportFragmentManager, "PauseMenuFragment")
         }
 
@@ -82,7 +85,6 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
 
     override fun onPause() {
         super.onPause()
-        // 액티비티가 실제 백그라운드로 빠질 때만 정지
         currentTimer?.cancel()
         BgmManager.stopBgm()
     }
@@ -134,21 +136,20 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
                     SoundEffectManager.playCorrect(this)
                 } else {
                     btn.backgroundTintList = ColorStateList.valueOf(Color.RED)
-                    buttons[q.correctIndex].backgroundTintList =
-                        ColorStateList.valueOf(Color.GREEN)
+                    buttons[q.correctIndex].backgroundTintList = ColorStateList.valueOf(Color.GREEN)
                     SoundEffectManager.playWrong(this)
                 }
 
                 tvScore.text = "점수: $score"
                 Handler(Looper.getMainLooper()).postDelayed({
                     currentIndex++
-                    startNextQuestion()
+                    StartFaceCapture()
                 }, 3000L)
             }
         }
 
-        tvTimer.text = "15"
-        currentTimer = object : CountDownTimer(15000, 1000) {
+        tvTimer.text = (timeLimit / 1000).toString()
+        currentTimer = object : CountDownTimer(timeLimit, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 val sec = (millisUntilFinished / 1000).toInt()
                 tvTimer.text = "$sec"
@@ -163,8 +164,7 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
             }
             override fun onFinish() {
                 buttons.forEach { it.isEnabled = false }
-                buttons[q.correctIndex].backgroundTintList =
-                    ColorStateList.valueOf(Color.GREEN)
+                buttons[q.correctIndex].backgroundTintList = ColorStateList.valueOf(Color.GREEN)
                 SoundEffectManager.playWrong(this@RandomQuizActivity)
                 Handler(Looper.getMainLooper()).postDelayed({
                     currentIndex++
@@ -174,9 +174,13 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
         }.start()
     }
 
+    private fun StartFaceCapture() {
+        val intent = Intent(this, CameraCaptureActivity::class.java)
+        startActivityForResult(intent, REQUEST_FACE_CAPTURE)
+    }
+
     private fun showResult() {
         currentTimer?.cancel()
-        // BgmManager.stopBgm() 제거 → BGM은 계속 재생
 
         FirebaseManager.uploadScore(
             gameType = GameTypes.QUIZ,
@@ -187,11 +191,9 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
         GameResultFragment.newInstance(score, GameTypes.QUIZ).apply {
             setOnResultActionListener(object : GameResultFragment.ResultActionListener {
                 override fun onRetry() {
-                    // 다시하기 시 BGM을 멈추지 않고 바로 재시작
                     loadQuestions()
                 }
                 override fun onQuit() {
-                    // 종료 시 finish() → onPause()에서 BGM 정지
                     startActivity(
                         Intent(this@RandomQuizActivity, GameSelectActivity::class.java)
                             .apply { addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) }
@@ -202,12 +204,10 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
         }.show(supportFragmentManager, "GameResultFragment")
     }
 
-    // PauseMenuFragment 콜백
     override fun onResumeGame() = Unit
 
     override fun onRetryGame() {
         currentTimer?.cancel()
-        // BGM 유지
         loadQuestions()
     }
 
@@ -217,5 +217,58 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
                 .apply { addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) }
         )
         finish()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == REQUEST_FACE_CAPTURE && resultCode == RESULT_OK && data != null) {
+            if (!EmotionAnalyzer.isInitialized()) {
+                EmotionAnalyzer.init(this)
+            }
+
+            val byteArray = data.getByteArrayExtra("captured_image")
+            if (byteArray != null) {
+                val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+                if (bitmap != null) {
+                    val emotion = EmotionAnalyzer.predict(bitmap)
+                    Log.d("Emotion", "분석 결과: $emotion")
+
+                    adjustDifficultyByEmotion(emotion)
+                    startNextQuestion()
+                } else {
+                    Log.e("onActivityResult", "bitmap decode 실패")
+                    startNextQuestion()
+                }
+            } else {
+                Log.e("onActivityResult", "이미지 데이터 없음")
+                startNextQuestion()
+            }
+        }
+    }
+
+    private fun adjustDifficultyByEmotion(emotion: String) {
+        when (emotion.lowercase()) {
+            "angry" -> {
+                timeLimit = 10000L
+                Toast.makeText(this, "화난 얼굴! 제한시간 10초!", Toast.LENGTH_SHORT).show()
+            }
+            "happy" -> {
+                timeLimit = 15000L
+                Toast.makeText(this, "기분 좋네요! 제한시간 15초!", Toast.LENGTH_SHORT).show()
+            }
+            "neutral" -> {
+                timeLimit = 12000L
+                Toast.makeText(this, "무표정이네요. 제한시간 12초!", Toast.LENGTH_SHORT).show()
+            }
+            "sad" -> {
+                timeLimit = 18000L
+                Toast.makeText(this, "슬퍼 보이네요. 제한시간 18초!", Toast.LENGTH_SHORT).show()
+            }
+            else -> {
+                timeLimit = 15000L
+                Toast.makeText(this, "감정 인식 실패. 기본 시간 15초.", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }

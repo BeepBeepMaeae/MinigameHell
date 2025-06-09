@@ -41,15 +41,18 @@ android {
     ksp {
         arg("room.schemaLocation", "$projectDir/schemas")
     }
-    kotlin {
-        jvmToolchain(17)
-    }
+//    kotlin {
+//        jvmToolchain(17)
+//    }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.11" // 이건 compose BOM에 맞춰 조정 가능
     }
 }
 
 dependencies {
+    implementation("org.tensorflow:tensorflow-lite:2.13.0")
+    implementation("org.tensorflow:tensorflow-lite-support:0.3.1")
+    implementation("org.tensorflow:tensorflow-lite-task-vision:0.3.1")
     implementation ("androidx.fragment:fragment-ktx:1.5.0")
     implementation(platform("androidx.compose:compose-bom:2024.04.01"))
     implementation("androidx.compose.ui:ui")
