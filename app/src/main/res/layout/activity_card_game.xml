@@ -44,21 +44,23 @@
     <!-- 카드 뽑기 버튼 -->
     <Button
         android:id="@+id/drawButton"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="카드 뽑기"
+        android:textSize="15pt"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="72dp"
+        android:layout_marginBottom="40dp"
         android:backgroundTint="@color/orange"
         android:textColor="@android:color/white" />
 
     <!-- 스톱 버튼 -->
     <Button
         android:id="@+id/stopButton"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="스톱"
+        android:textSize="15pt"
         android:enabled="false"
         android:layout_above="@id/drawButton"
         android:layout_centerHorizontal="true"
