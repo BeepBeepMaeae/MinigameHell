@@ -8,7 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import com.bumptech.glide.Glide
@@ -20,7 +19,6 @@ class RankingFragment : DialogFragment() {
     private lateinit var tvRankingTitle: TextView
     private lateinit var tvRankingList: TextView
     private lateinit var btnShare: Button
-    private lateinit var profileImageView: ImageView
 
     companion object {
         private const val ARG_GAME_TITLE = "game_title"
@@ -47,12 +45,10 @@ class RankingFragment : DialogFragment() {
         tvRankingTitle = view.findViewById(R.id.tvRankingTitle)
         tvRankingList = view.findViewById(R.id.tvRankingList)
         btnShare = view.findViewById(R.id.btnShare)
-        profileImageView = view.findViewById(R.id.profileImageView)
 
         SharedPrefManager.getProfileImageUri(requireContext())?.let { uriString ->
             Glide.with(this)
                 .load(Uri.parse(uriString))
-                .into(profileImageView)
         }
 
         val gameKey = arguments?.getString(ARG_GAME_TITLE) ?: GameTypes.QUIZ
