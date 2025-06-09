@@ -8,28 +8,27 @@ Android용 미니게임 모음 앱으로, 카드 게임·랜덤 퀴즈·반응 �
 ## 📌 주요 기능
 
 ### 1. 게임 목록 & 네비게이션
-- **MainActivity**:  
+- **MainActivity**  
   - 앱 시작, 설정 화면 진입  
   - 프로필 이미지 실시간 반영 (`fragmentResultListener`)
-- **GameSelectActivity**:  
-  - ViewPager2 + `GamePagerAdapter` 로 3종 게임 슬라이드 표시
-  - 게임 선택 시 BGM 유지 재생  
+- **GameSelectActivity**  
+  - ViewPager2 + `GamePagerAdapter` 로 3종 게임 슬라이드 표시  
+  - 게임 선택 시 BGM 끊김 없이 유지 재생  
 
 ### 2. 게임 콘텐츠
-| 게임명       | Activity / Fragment                   | 설명                                                         |
-|-----------| ------------------------------------- | ------------------------------------------------------------ |
-| 블랙 잭      | `CardGameActivity`                   | Deck of Cards API 이용<br>21 최대 점수, 5회 기회, 22 이상 시 버스트 처리 및 0점 |
-| 랜덤 퀴즈     | `RandomQuizActivity`                 | Open Trivia DB API 이용<br>5문제 랜덤, 타이머(15초), 빠른 정답 시 보너스 점수 |
-| 반응 속도 테스트 | `ReactionTestActivity`               | 5회 라운드, 지연 무작위 지점 클릭 시간 측정, 평균 반응속도 기반 점수 산출 |
+| 게임명           | Activity / Fragment          | 설명                                                                                                                                                             |
+|--------------|-----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 블랙 잭         | `CardGameActivity`          | Deck of Cards API 이용<br>21 최대 점수, 5회 기회, 22 이상 시 버스트 처리 및 0점                                                                                    |
+| 랜덤 퀴즈        | `RandomQuizActivity`        | Open Trivia DB API 이용<br>10문제 랜덤, 타이머(15초)<br>**표정 인식 기반 난이도 조정**<br>• 웃음: 오답 1개 제거 + 타이머 +15초<br>• 슬픔/화남: 타이머 +5초                  |
+| 반응 속도 테스트   | `ReactionTestActivity`      | 5회 라운드 수행<br>기본 점수 200점, 반응 지연 0.01초당 1점 차감<br>너무 빨리 누르면 해당 라운드 점수 0점 처리<br>2초 이상 반응 시 음수 점수 허용<br>5회 라운드 합산이 최종 점수                      |
 
 ### 3. 공통 지원 기능
-- **설정** (`SettingsFragment`):  
-  - 닉네임/프로필 이미지 변경 (`SharedPrefManager`)
-  - 배경음·효과음 볼륨 실시간 조정 (`BgmManager`, `SoundEffectManager`)   
-- **결과 & 랭킹**  
-  - `GameResultFragment` 을 통한 점수 확인·재시도·랭킹 조회·공유
-  - `RankingFragment` 에서 Firebase Firestore 연동 5위 랭킹 표
-  - 점수 업로드: `FirebaseManager.uploadScore()`
+- 닉네임/프로필 이미지 변경 (`SharedPrefManager`)
+- 배경음·효과음 볼륨 실시간 조정 (`BgmManager`, `SoundEffectManager`)
+- Machine Learning 모델 기반 얼굴 표정 인식 → 난이도 조정
+- `GameResultFragment` 을 통한 점수 확인·재시도·랭킹 조회·공유
+- `RankingFragment` 에서 Firebase Firestore 연동 5위 랭킹 표
+- 점수 업로드: `FirebaseManager.uploadScore()`
 
 ### 4. 기술 스택
 - Kotlin + AndroidX  
@@ -38,11 +37,7 @@ Android용 미니게임 모음 앱으로, 카드 게임·랜덤 퀴즈·반응 �
 - Retrofit2 + Gson (Trivia & Deck of Cards API)  
 - Firebase Firestore (랭킹 저장)  
 - Glide (이미지 로딩)  
-
----
-
-## 🚧 미구현 / 진행 중
-- **Machine Learning** 모델 기반 사용자 표정 인식 → 문제 난이도 조정 `(진행 중)`
+- TensorFlow Lite (얼굴 표정 인식 모델)
 
 ---
 
@@ -55,7 +50,5 @@ Android용 미니게임 모음 앱으로, 카드 게임·랜덤 퀴즈·반응 �
 ---
 
 ## 라이선스
-MIT License
-
-Copyright (c) 2025 이천서, 김동현
-...
+MIT License  
+Copyright (c) 2025 이천서, 김동현  
