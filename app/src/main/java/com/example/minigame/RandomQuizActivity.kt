@@ -77,7 +77,8 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
             PauseMenuFragment().show(supportFragmentManager, "PauseMenuFragment")
         }
 
-        loadQuestions()
+        // 게임 시작 시 카메라를 한 번만 실행하여 난이도를 설정
+        StartFaceCapture()
     }
 
     override fun onResume() {
@@ -101,8 +102,7 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
                     questionList.addAll(fetched)
                     score = 0
                     currentIndex = 0
-                    lastEmotion = null
-                    timeLimit = 15000L
+                    // lastEmotion은 이미 초기 감정으로 설정되어 있음
                     startNextQuestion()
                 }
             } catch (e: Exception) {
@@ -119,7 +119,6 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
             return
         }
 
-        // 다음 문제 준비
         val q = questionList[currentIndex]
         tvScore.text    = "점수: $score"
         tvQuestion.text = q.question
@@ -146,7 +145,6 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
             lastEmotion = null
         }
 
-        // 각 선택지에 클릭 리스너 설정
         buttons.forEachIndexed { idx, btn ->
             btn.setOnClickListener {
                 currentTimer?.cancel()
@@ -167,12 +165,11 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
                 tvScore.text = "점수: $score"
                 Handler(Looper.getMainLooper()).postDelayed({
                     currentIndex++
-                    StartFaceCapture()
+                    startNextQuestion()  // 다음 문제로 바로 이동
                 }, 3000L)
             }
         }
 
-        // 타이머 시작
         tvTimer.text = (timeLimit / 1000).toString()
         currentTimer = object : CountDownTimer(timeLimit, 1000) {
             override fun onTick(millisUntilFinished: Long) {
@@ -222,14 +219,12 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
 
                 // 감정에 따른 시간 제한 조정
                 adjustDifficultyByEmotion(emotion)
-                // 웃는(happy) 얼굴이면 다음 문제에서 오답 숨기기
                 lastEmotion = emotion
-
             } else {
-                Log.e("onActivityResult", "bitmap decode 실패 또는 이미지 데이터 없음")
+                Log.e("RandomQuizActivity", "bitmap decode 실패 또는 이미지 데이터 없음")
             }
-            // 얼굴 인식 뒤 바로 다음 문제 표시
-            startNextQuestion()
+            // 얼굴 인식 후 한 번만 문제 로딩
+            loadQuestions()
         }
     }
 
@@ -270,7 +265,7 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
         GameResultFragment.newInstance(score, GameTypes.QUIZ).apply {
             setOnResultActionListener(object : GameResultFragment.ResultActionListener {
                 override fun onRetry() {
-                    loadQuestions()
+                    StartFaceCapture()  // 재시작 시에도 다시 한 번 사진 캡처
                 }
                 override fun onQuit() {
                     startActivity(
@@ -287,7 +282,7 @@ class RandomQuizActivity : AppCompatActivity(), PauseMenuFragment.PauseMenuListe
 
     override fun onRetryGame() {
         currentTimer?.cancel()
-        loadQuestions()
+        StartFaceCapture()
     }
 
     override fun onQuitGame() {
